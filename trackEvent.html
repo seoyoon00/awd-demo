@@ -1,0 +1,72 @@
+<!-- trackEvent.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Track Event</title>
+</head>
+<body>
+  <h1>Track Event</h1>
+  
+  <form id="trackEventForm">
+    <label for="trackUserId">User ID:</label>
+    <input type="text" id="trackUserId" name="trackUserId" required>
+
+    <label for="trackItemId">Item ID:</label>
+    <input type="text" id="trackItemId" name="trackItemId" required>
+
+    <button type="button" onclick="trackEvent()">Track Event</button>
+  </form>
+
+  <script>
+    function trackEvent() {
+      const trackUserId = document.getElementById('trackUserId').value;
+      const trackItemId = document.getElementById('trackItemId').value;
+  
+      // Get the current timestamp in ISO format
+      const currentTimestamp = new Date().toISOString();
+  
+      // Generate a unique session ID for each user session
+      const sessionId = 'session-' + trackUserId + '-' + currentTimestamp;
+  
+      // Generate a unique event ID for each event
+      const eventId = 'event-' + currentTimestamp + '-' + Math.random().toString(36).substring(7);
+  
+      // Create the properties JSON object with itemId
+      const properties = { itemId: trackItemId };
+  
+      fetch('/trackEvent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: trackUserId,
+          itemId: trackItemId,
+          sentAt: currentTimestamp,
+          eventType: 'click', // You can customize the event type based on your use case
+          sessionId: sessionId,
+          eventId: eventId,
+          properties: properties,
+        }),
+      })
+      .then(response => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error('Error tracking event');
+        }
+      })
+      .then(data => {
+        alert('Event tracked successfully!');
+        console.log(data);
+      })
+      .catch(error => {
+        console.error('Error tracking event:', error);
+        alert('Error tracking event. Please try again.');
+      });
+    }
+  </script>
+</body>
+</html>
