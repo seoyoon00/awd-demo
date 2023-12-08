@@ -24,48 +24,42 @@
   <div id="recommendations"></div>
 
   <script>
-    function trackEvent() {
-      const trackUserId = document.getElementById('trackUserId').value;
-      const trackItemId = document.getElementById('trackItemId').value;
+    function getUserRecommendations() {
+      const userId = document.getElementById('userId').value;
+      fetchRecommendations('/recommend', { userId });
+    }
   
-      // Get the current timestamp in ISO format
-      const currentTimestamp = new Date().toISOString();
+    function getItemRecommendations() {
+      const itemId = document.getElementById('itemId').value;
+      fetchRecommendations('/recommendMoreContents', { itemId });
+    }
   
-      // Generate a unique session ID for each user session
-      const sessionId = 'session-' + trackUserId + '-' + currentTimestamp;
-  
-      // Generate a unique event ID for each event
-      const eventId = 'event-' + currentTimestamp + '-' + Math.random().toString(36).substring(7);
-  
-      fetch('/trackEvent', {
+    function fetchRecommendations(endpoint, data) {
+      fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          userId: trackUserId,
-          itemId: trackItemId,
-          sentAt: currentTimestamp,
-          eventType: 'click', // You can customize the event type based on your use case
-          sessionId: sessionId,
-          eventId: eventId,
-        }),
+        body: JSON.stringify(data),
       })
-      .then(response => {
-        if (response.ok) {
-          return response.json();
-        } else {
-          throw new Error('Error tracking event');
-        }
-      })
+      .then(response => response.json())
       .then(data => {
-        alert('Event tracked successfully!');
-        console.log(data);
+        const recommendations = data.recommendedItems.map(item => `
+          <div>
+            <p><strong>Item ID:</strong> ${item.item_ID}</p>
+            <p><strong>Title:</strong> ${item.title}</p>
+            <p><strong>Artist:</strong> ${item.artist}</p>
+            <p><strong>Style:</strong> ${item.style}</p>
+            <p><strong>Genre:</strong> ${item.genre}</p>
+            <p><strong>Material:</strong> ${item.material}</p>
+            <p><strong>Date:</strong> ${item.date}</p>
+            <p>-----</p>
+          </div>
+        `).join('');
+  
+        document.getElementById('recommendations').innerHTML = recommendations;
       })
-      .catch(error => {
-        console.error('Error tracking event:', error);
-        alert('Error tracking event. Please try again.');
-      });
+      .catch(error => console.error('Error:', error));
     }
   </script>
 </body>
